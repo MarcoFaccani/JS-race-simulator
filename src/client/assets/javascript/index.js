@@ -74,21 +74,26 @@ async function delay(ms) {
 
 // This async function controls the flow of the race, add the logic and error handling
 async function handleCreateRace() {
+
+	const { player_id, track_id } = store
+
 	// render starting UI
-	renderAt('#race', renderRaceStartView())
-
-	// TODO - Get player_id and track_id from the store
+	renderAt('#race', renderRaceStartView(document.getElementById(track_id)))
 	
-	// const race = TODO - invoke the API call to create the race, then save the result
+	// const race = invoke the API call to create the race, then save the result
+	const race = await createRace(player_id, track_id)
 
-	// TODO - update the store with the race id
+	// update the store with the race id
+	updateStore(store, { race_id : race.ID} )
 
 	// The race has been created, now start the countdown
-	// TODO - call the async function runCountdown
+	runCountdown()
 
-	// TODO - call the async function startRace
+	// call the async function startRace
+	startRace(race.ID)
 
 	// TODO - call the async function runRace
+	runRace(race.ID)
 }
 
 function runRace(raceID) {
@@ -115,17 +120,13 @@ function runRace(raceID) {
 async function runCountdown() {
 	try {
 		// wait for the DOM to load
-		await delay(1000)
+		await delay(500)
 		let timer = 3
 
 		return new Promise(resolve => {
-			// TODO - use Javascript's built in setInterval method to count down once per second
-
-			// run this DOM manipulation to decrement the countdown for the user
-			document.getElementById('big-numbers').innerHTML = --timer
-
-			// TODO - if the countdown is done, clear the interval, resolve the promise, and return
-
+			counterView = document.getElementById('big-numbers')
+			setInterval( () => { timer > 0 ? counterView.innerHTML = --timer : clearInterval(); }, 1000)
+			resolve()
 		})
 	} catch(error) {
 		console.log(error);
@@ -144,7 +145,8 @@ function handleSelectPodRacer(target) {
 	// add class selected to current target
 	target.classList.add('selected')
 
-	// TODO - save the selected racer to the store
+	// save the selected racer to the store
+	updateStore(store, {player_id: target.id})
 }
 
 function handleSelectTrack(target) {
@@ -159,8 +161,9 @@ function handleSelectTrack(target) {
 	// add class selected to current target
 	target.classList.add('selected')
 
-	// TODO - save the selected track id to the store
-	
+	// save the selected track id to the store
+	updateStore(store, {track_id: target.id})
+
 }
 
 function handleAccelerate() {
@@ -234,7 +237,7 @@ function renderCountdown(count) {
 	`
 }
 
-function renderRaceStartView(track, racers) {
+function renderRaceStartView(track) {
 	return `
 		<header>
 			<h1>Race: ${track.name}</h1>
@@ -304,6 +307,13 @@ function renderAt(element, html) {
 // ^ Provided code ^ do not remove
 
 
+// UTILITY FUNCTIONS ---------------------------------------
+
+function updateStore(store, newState) {
+	store = Object.assign(store, newState)
+}
+
+
 // API CALLS ------------------------------------------------
 
 const SERVER = 'http://localhost:8000'
@@ -340,7 +350,7 @@ function createRace(player_id, track_id) {
 	return fetch(`${SERVER}/api/races`, {
 		method: 'POST',
 		...defaultFetchOpts(),
-		dataType: 'jsonp',
+		dataType: 'json',
 		body: JSON.stringify(body)
 	})
 	.then(res => res.json())
@@ -349,6 +359,8 @@ function createRace(player_id, track_id) {
 
 function getRace(id) {
 	// GET request to `${SERVER}/api/races/${id}`
+	return fetch(`${SERVER}/api/races/${id}`)
+			.catch(err => console.log(`getRace - Error: ${err}`))
 }
 
 function startRace(id) {
