@@ -86,47 +86,50 @@ async function handleCreateRace() {
 	// update the store with the race id
 	updateStore(store, { race_id : parseInt(race.ID)-1} )
 
-	// The race has been created, now start the countdown
-	runCountdown()
+	await runCountdown() // <-- IT'S NOT BLOCKING
 
-	// call the async function startRace
 	await startRace(race.ID-1).then(console.log('startRace completed'))
 
-	// call the async function runRace
-	await runRace(race.ID-1)
+	runRace(race.ID-1) // <-- REPLACES COUNTDOWN WITH PLAYER'S POSITIONS
 }
 
-async function runRace(raceID) {
+function runRace(raceID) {
 	try {
-		const race = await getRace(raceID)
-		console.log(race)
-	
-		setInterval( function() {
+		
+		const interval_ID = setInterval( async (resolve) => {
+			const race = await getRace(raceID)
+			console.log(`Race status is: ${race.status}`)
+
 			if (race.status === 'in-progress') renderAt('#leaderBoard', raceProgress(race.positions))
 			else if (race.status === 'finished') {
-				clearInterval(timeInterval) // to stop the interval from repeating raceInterval
-				renderAt('#race', resultsView(res.positions)) // to render the results view
-				reslove(res) // resolve the promise
+				console.log('RACE FINISHED!')
+				clearInterval(interval_ID) // to stop the interval from repeating 
+				renderAt('#race', resultsView(race.positions)) // to render the results view
 			}
 		}, 500 )
+		
 	} catch (err) {
 		console.log(`runRace - Error! ${err}`)
 	}
 	
 }
 
-	
 async function runCountdown() {
 	try {
 		// wait for the DOM to load
 		await delay(1000)
 		let timer = 3
 
+		counterView = document.getElementById('big-numbers')
+		await setInterval( () => { timer > 0 ? counterView.innerHTML = --timer : clearInterval(); }, 1000)
+
+/*
 		return new Promise(resolve => {
 			counterView = document.getElementById('big-numbers')
 			setInterval( () => { timer > 0 ? counterView.innerHTML = --timer : clearInterval(); }, 1000)
 			resolve()
-		})
+		}) */
+
 	} catch(error) {
 		console.log(error);
 	}
@@ -167,8 +170,7 @@ function handleSelectTrack(target) {
 
 function handleAccelerate(target) {
 	console.log("accelerate button clicked")
-	// TODO - Invoke the API call to accelerate
-	accelerate(target.id)
+	accelerate(store.race_id)
 }
 
 // HTML VIEWS ------------------------------------------------
