@@ -34,17 +34,23 @@ async function onPageLoad() {
 
 function setupClickHandlers() {
 	document.addEventListener('click', function(event) {
-		const { target } = event
+		let { target } = event
 
 		// Race track form field
-		if (target.matches('.card.track')) {
-			handleSelectTrack(target)
-		}
+		if (target.matches('.card.track') || target.parentNode.matches('.card.track')) {
+			if (target.parentNode.matches('.card.track')) { 
+			  target = target.parentNode;
+			}
+		handleSelectTrack(target)
+	  }
 
 		// Podracer form field
-		if (target.matches('.card.podracer')) {
-			handleSelectPodRacer(target)
-		}
+		if (target.matches('.card.podracer') || target.parentNode.matches('.card.podracer')) {
+			if (target.parentNode.matches('.card.podracer')) { 
+				 target = target.parentNode;
+			}
+		handleSelectPodRacer(target)
+	  }
 
 		// Submit create race form
 		if (target.matches('#submit-create-race')) {
