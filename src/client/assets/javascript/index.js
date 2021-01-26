@@ -1,7 +1,7 @@
 // PROVIDED CODE BELOW (LINES 1 - 80) DO NOT REMOVE
 
 // The store will hold all information needed globally
-var store = {
+const store = {
 	track_id: undefined,
 	player_id: undefined,
 	race_id: undefined,
@@ -86,11 +86,11 @@ async function handleCreateRace() {
 	// update the store with the race id
 	updateStore(store, { race_id : parseInt(race.ID)-1} )
 
-	await runCountdown() // <-- IT'S NOT BLOCKING
+	await runCountdown().catch(err => console.log(`runCountdown - Error! ${err}`))
 
-	await startRace(race.ID-1).then(console.log('startRace completed'))
+	await startRace(race.ID-1)
 
-	runRace(race.ID-1) // <-- REPLACES COUNTDOWN WITH PLAYER'S POSITIONS
+	runRace(race.ID-1) 
 }
 
 function runRace(raceID) {
