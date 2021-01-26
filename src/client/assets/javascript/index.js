@@ -119,21 +119,25 @@ async function runCountdown() {
 		// wait for the DOM to load
 		await delay(1000)
 		let timer = 3
-
-		counterView = document.getElementById('big-numbers')
-		await setInterval( () => { timer > 0 ? counterView.innerHTML = --timer : clearInterval(); }, 1000)
-
-/*
+		
 		return new Promise(resolve => {
 			counterView = document.getElementById('big-numbers')
-			setInterval( () => { timer > 0 ? counterView.innerHTML = --timer : clearInterval(); }, 1000)
-			resolve()
-		}) */
+
+			const interval = setInterval(() => {
+				counterView.innerHTML = --timer
+				if (timer <= 0) {
+					clearInterval(interval)
+					resolve("done")
+					return
+				}
+			}, 1000)
+		})
 
 	} catch(error) {
 		console.log(error);
 	}
-}
+} 
+
 
 function handleSelectPodRacer(target) {
 	console.log("selected a pod", target.id)
