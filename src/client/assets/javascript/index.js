@@ -82,6 +82,10 @@ async function delay(ms) {
 async function handleCreateRace() {
 
 	const { player_id, track_id } = store
+	if(!track_id || !player_id) {
+		alert(`Please select track and racer to start the race!`);
+		return;
+	  }
 
 	// render starting UI
 	renderAt('#race', renderRaceStartView(document.getElementById(track_id)))
@@ -122,6 +126,8 @@ function runRace(raceID) {
 
 async function runCountdown() {
 	try {
+		document.getElementById("gas-peddle").disabled = true;
+
 		// wait for the DOM to load
 		await delay(1000)
 		let timer = 3
@@ -134,6 +140,7 @@ async function runCountdown() {
 				if (timer <= 0) {
 					clearInterval(interval)
 					resolve("done")
+					document.getElementById("gas-peddle").disabled = false;
 					return
 				}
 			}, 1000)
@@ -249,6 +256,7 @@ function renderCountdown(count) {
 }
 
 function renderRaceStartView(track) {
+
 	return `
 		<header>
 			<h1>Race: ${track.name}</h1>
